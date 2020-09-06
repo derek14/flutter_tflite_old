@@ -478,6 +478,47 @@ public class TflitePlugin implements MethodCallHandler {
     }
   }
 
+  private class RunSiameseOnImages extends TfliteTask {
+    int INPUT_DIM;
+    ByteBuffer x1;
+    ByteBuffer x2;
+    long startTime;
+    Map<Integer, Object> outputs = new HashMap<>();
+    Object[] inputs;
+    float[][] similarity;
+
+    RunSiameseOnImages(HashMap args, Result result) throws IOException {
+      super(args, result);
+
+      String testPath = args.get("testPath").toString();
+      String triggerPath = args.get("triggerPath").toString();
+
+      double mean = (double) (args.get("imageMean"));
+      float IMAGE_MEAN = (float) mean;
+      double std = (double) (args.get("imageStd"));
+      float IMAGE_STD = (float) std;
+      INPUT_DIM = (int) args.get("inputDim");
+      
+      x1 = feedInputTensorImage(testPath, IMAGE_MEAN, IMAGE_STD);
+      x2 = feedInputTensorImage(triggerPath, IMAGE_MEAN, IMAGE_STD);
+
+      startTime = SystemClock.uptimeMillis();
+      inputs = { x1 , x2 };
+      
+      outputs.put(0, new float[1][1]);
+    }
+
+    protected void runTflite() {
+      tfLite.runForMultipleInputsOutputs(inputs, outputs);
+    }
+
+    protected void onRunTfliteDone() {
+      Log.v("time", "Inference took " + (SystemClock.uptimeMillis() - startTime));
+      similarity = ( float[][] )outputs.get( 0 ) ;
+      result.success(similarity[0][0]);
+    }
+  }
+
   private class RunModelOnImage extends TfliteTask {
     int NUM_RESULTS;
     float THRESHOLD;
