@@ -100,6 +100,12 @@ public class TflitePlugin implements MethodCallHandler {
       } catch (Exception e) {
         result.error("Failed to load model", e.getMessage(), e);
       }
+    } else if (call.method.equals("runSiameseOnImages")) {
+      try {
+        new RunSiameseOnImages((HashMap) call.arguments, result).executeTfliteTask();
+      } catch (Exception e) {
+        result.error("Failed to run model", e.getMessage(), e);
+      }
     } else if (call.method.equals("runModelOnImage")) {
       try {
         new RunModelOnImage((HashMap) call.arguments, result).executeTfliteTask();
@@ -479,7 +485,6 @@ public class TflitePlugin implements MethodCallHandler {
   }
 
   private class RunSiameseOnImages extends TfliteTask {
-    int INPUT_DIM;
     ByteBuffer x1;
     ByteBuffer x2;
     long startTime;
@@ -497,7 +502,6 @@ public class TflitePlugin implements MethodCallHandler {
       float IMAGE_MEAN = (float) mean;
       double std = (double) (args.get("imageStd"));
       float IMAGE_STD = (float) std;
-      INPUT_DIM = (int) args.get("inputDim");
       
       x1 = feedInputTensorImage(testPath, IMAGE_MEAN, IMAGE_STD);
       x2 = feedInputTensorImage(triggerPath, IMAGE_MEAN, IMAGE_STD);
