@@ -513,7 +513,7 @@ public class TflitePlugin implements MethodCallHandler {
     }
 
     protected void runTflite() {
-      tfLite.runForMultipleInputsOutputs(inputs, outputs);
+      tfLite.runForMultipleInputsOutputs(input, outputs);
     }
 
     protected void onRunTfliteDone() {
