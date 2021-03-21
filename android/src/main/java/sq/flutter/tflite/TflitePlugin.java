@@ -361,34 +361,47 @@ public class TflitePlugin implements MethodCallHandler {
         canvas.drawBitmap(bitmapRaw, matrix, null);
       }
     }
-
-    if (tensor.dataType() == DataType.FLOAT32) {
-      for (int i = 0; i < inputSize; ++i) {
-        for (int j = 0; j < inputSize; ++j) {
-          int pixelValue = bitmap.getPixel(j, i);
-          if (inputChannels > 1){
-            imgData.putFloat((((pixelValue >> 16) & 0xFF) - mean) / std);
-            imgData.putFloat((((pixelValue >> 8) & 0xFF) - mean) / std);
-            imgData.putFloat(((pixelValue & 0xFF) - mean) / std);
-          } else {
-            imgData.putFloat((((pixelValue >> 16 | pixelValue >> 8 | pixelValue) & 0xFF) - mean) / std);
-          }
-        }
-      }
-    } else {
-      for (int i = 0; i < inputSize; ++i) {
-        for (int j = 0; j < inputSize; ++j) {
-          int pixelValue = bitmap.getPixel(j, i);
-          if (inputChannels > 1){
-            imgData.put((byte) ((pixelValue >> 16) & 0xFF));
-            imgData.put((byte) ((pixelValue >> 8) & 0xFF));
-            imgData.put((byte) (pixelValue & 0xFF));
-          } else {
-            imgData.put((byte) ((pixelValue >> 16 | pixelValue >> 8 | pixelValue) & 0xFF));
-          }
+    
+    for (int i = 0; i < inputSize; ++i) {
+      for (int j = 0; j < inputSize; ++j) {
+        int pixelValue = bitmap.getPixel(j, i);
+        if (inputChannels > 1){
+          imgData.put((byte) ((pixelValue >> 16) & 0xFF));
+          imgData.put((byte) ((pixelValue >> 8) & 0xFF));
+          imgData.put((byte) (pixelValue & 0xFF));
+        } else {
+          imgData.put((byte) ((pixelValue >> 16 | pixelValue >> 8 | pixelValue) & 0xFF));
         }
       }
     }
+
+    // if (tensor.dataType() == DataType.FLOAT32) {
+    //   for (int i = 0; i < inputSize; ++i) {
+    //     for (int j = 0; j < inputSize; ++j) {
+    //       int pixelValue = bitmap.getPixel(j, i);
+    //       if (inputChannels > 1){
+    //         imgData.putFloat((((pixelValue >> 16) & 0xFF) - mean) / std);
+    //         imgData.putFloat((((pixelValue >> 8) & 0xFF) - mean) / std);
+    //         imgData.putFloat(((pixelValue & 0xFF) - mean) / std);
+    //       } else {
+    //         imgData.putFloat((((pixelValue >> 16 | pixelValue >> 8 | pixelValue) & 0xFF) - mean) / std);
+    //       }
+    //     }
+    //   }
+    // } else {
+    //   for (int i = 0; i < inputSize; ++i) {
+    //     for (int j = 0; j < inputSize; ++j) {
+    //       int pixelValue = bitmap.getPixel(j, i);
+    //       if (inputChannels > 1){
+    //         imgData.put((byte) ((pixelValue >> 16) & 0xFF));
+    //         imgData.put((byte) ((pixelValue >> 8) & 0xFF));
+    //         imgData.put((byte) (pixelValue & 0xFF));
+    //       } else {
+    //         imgData.put((byte) ((pixelValue >> 16 | pixelValue >> 8 | pixelValue) & 0xFF));
+    //       }
+    //     }
+    //   }
+    // }
 
     return imgData;
   }
