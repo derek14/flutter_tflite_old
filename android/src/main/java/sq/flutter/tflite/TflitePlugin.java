@@ -422,6 +422,29 @@ public class TflitePlugin implements MethodCallHandler {
     rgba[index * 4 + 3] = (byte) ((color >> 24) & 0xFF);
   }
 
+  private static Matrix getTransformationMatrix(final int srcWidth,
+                                                final int srcHeight,
+                                                final int dstWidth,
+                                                final int dstHeight,
+                                                final boolean maintainAspectRatio) {
+    final Matrix matrix = new Matrix();
+
+    if (srcWidth != dstWidth || srcHeight != dstHeight) {
+      final float scaleFactorX = dstWidth / (float) srcWidth;
+      final float scaleFactorY = dstHeight / (float) srcHeight;
+
+      if (maintainAspectRatio) {
+        final float scaleFactor = Math.max(scaleFactorX, scaleFactorY);
+        matrix.postScale(scaleFactor, scaleFactor);
+      } else {
+        matrix.postScale(scaleFactorX, scaleFactorY);
+      }
+    }
+
+    matrix.invert(new Matrix());
+    return matrix;
+  }
+
   private void close() {
     if (tfLite != null)
       tfLite.close();
