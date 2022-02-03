@@ -89,12 +89,6 @@ public class TflitePlugin implements MethodCallHandler {
       } catch (Exception e) {
         result.error("Failed to run model", e.getMessage(), e);
       }
-    } else if (call.method.equals("runModelOnBinary")) {
-      try {
-        new RunModelOnBinary((HashMap) call.arguments, result).executeTfliteTask();
-      } catch (Exception e) {
-        result.error("Failed to run model", e.getMessage(), e);
-      }
     } else if (call.method.equals("runModelOnFrame")) {
       try {
         new RunModelOnFrame((HashMap) call.arguments, result).executeTfliteTask();
