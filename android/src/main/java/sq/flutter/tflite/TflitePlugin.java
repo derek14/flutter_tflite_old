@@ -342,10 +342,12 @@ public class TflitePlugin implements MethodCallHandler {
     RunModelOnFrame(HashMap args, Result result) throws IOException {
       super(args, result);
 
-      ByteBuffer imgData = (ByteBuffer) args.get("bytesList");
+      byte[] bytesList = (byte[]) args.get("bytesList");
       int rotation = (int) (args.get("rotation"));
 
       startTime = SystemClock.uptimeMillis();
+
+      imgData = ByteBuffer.wrap(bytesList);
 
 //      imgData = feedInputTensorFrame(bytesList, imageHeight, imageWidth, 0, 1, rotation);
     }
