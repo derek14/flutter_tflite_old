@@ -341,16 +341,16 @@ public class TflitePlugin implements MethodCallHandler {
     RunModelOnFrame(HashMap args, Result result) throws IOException {
       super(args, result);
 
-      List<byte[]> bytesList = (ArrayList) args.get("bytesList");
+      ByteBuffer bytesList = (ByteBuffer) args.get("bytesList");
       int rotation = (int) (args.get("rotation"));
 
       startTime = SystemClock.uptimeMillis();
 
-      imgData = feedInputTensorFrame(bytesList, imageHeight, imageWidth, 0, 1, rotation);
+//      imgData = feedInputTensorFrame(bytesList, imageHeight, imageWidth, 0, 1, rotation);
     }
 
     protected void runTflite() {
-      tfLite.run(imgData, output);
+      tfLite.run(bytesList, output);
     }
 
     protected void onRunTfliteDone() {
@@ -367,53 +367,53 @@ public class TflitePlugin implements MethodCallHandler {
       output = null;
   }
 
-  ByteBuffer feedInputTensorFrame(List<byte[]> bytesList, int imageHeight, int imageWidth, float mean, float std, int rotation) throws IOException {
-    ByteBuffer Y = ByteBuffer.wrap(bytesList.get(0));
-    ByteBuffer U = ByteBuffer.wrap(bytesList.get(1));
-    ByteBuffer V = ByteBuffer.wrap(bytesList.get(2));
-
-    int Yb = Y.remaining();
-    int Ub = U.remaining();
-    int Vb = V.remaining();
-
-    byte[] data = new byte[Yb + Ub + Vb];
-
-    Y.get(data, 0, Yb);
-    V.get(data, Yb, Vb);
-    U.get(data, Yb + Vb, Ub);
-
-    Bitmap bitmapRaw = Bitmap.createBitmap(imageWidth, imageHeight, Bitmap.Config.ARGB_8888);
-    Allocation bmData = renderScriptNV21ToRGBA888(
-            mRegistrar.context(),
-            imageWidth,
-            imageHeight,
-            data);
-    bmData.copyTo(bitmapRaw);
-
-    Matrix matrix = new Matrix();
-    matrix.postRotate(rotation);
-    bitmapRaw = Bitmap.createBitmap(bitmapRaw, 0, 0, bitmapRaw.getWidth(), bitmapRaw.getHeight(), matrix, true);
-
-    return feedInputTensor(bitmapRaw, mean, std);
-  }
-
-  public Allocation renderScriptNV21ToRGBA888(Context context, int width, int height, byte[] nv21) {
-    // https://stackoverflow.com/a/36409748
-    RenderScript rs = RenderScript.create(context);
-    ScriptIntrinsicYuvToRGB yuvToRgbIntrinsic = ScriptIntrinsicYuvToRGB.create(rs, Element.U8_4(rs));
-
-    Type.Builder yuvType = new Type.Builder(rs, Element.U8(rs)).setX(nv21.length);
-    Allocation in = Allocation.createTyped(rs, yuvType.create(), Allocation.USAGE_SCRIPT);
-
-    Type.Builder rgbaType = new Type.Builder(rs, Element.RGBA_8888(rs)).setX(width).setY(height);
-    Allocation out = Allocation.createTyped(rs, rgbaType.create(), Allocation.USAGE_SCRIPT);
-
-    in.copyFrom(nv21);
-
-    yuvToRgbIntrinsic.setInput(in);
-    yuvToRgbIntrinsic.forEach(out);
-    return out;
-  }
+//  ByteBuffer feedInputTensorFrame(List<byte[]> bytesList, int imageHeight, int imageWidth, float mean, float std, int rotation) throws IOException {
+//    ByteBuffer Y = ByteBuffer.wrap(bytesList.get(0));
+//    ByteBuffer U = ByteBuffer.wrap(bytesList.get(1));
+//    ByteBuffer V = ByteBuffer.wrap(bytesList.get(2));
+//
+//    int Yb = Y.remaining();
+//    int Ub = U.remaining();
+//    int Vb = V.remaining();
+//
+//    byte[] data = new byte[Yb + Ub + Vb];
+//
+//    Y.get(data, 0, Yb);
+//    V.get(data, Yb, Vb);
+//    U.get(data, Yb + Vb, Ub);
+//
+//    Bitmap bitmapRaw = Bitmap.createBitmap(imageWidth, imageHeight, Bitmap.Config.ARGB_8888);
+//    Allocation bmData = renderScriptNV21ToRGBA888(
+//            mRegistrar.context(),
+//            imageWidth,
+//            imageHeight,
+//            data);
+//    bmData.copyTo(bitmapRaw);
+//
+//    Matrix matrix = new Matrix();
+//    matrix.postRotate(rotation);
+//    bitmapRaw = Bitmap.createBitmap(bitmapRaw, 0, 0, bitmapRaw.getWidth(), bitmapRaw.getHeight(), matrix, true);
+//
+//    return feedInputTensor(bitmapRaw, mean, std);
+//  }
+//
+//  public Allocation renderScriptNV21ToRGBA888(Context context, int width, int height, byte[] nv21) {
+//    // https://stackoverflow.com/a/36409748
+//    RenderScript rs = RenderScript.create(context);
+//    ScriptIntrinsicYuvToRGB yuvToRgbIntrinsic = ScriptIntrinsicYuvToRGB.create(rs, Element.U8_4(rs));
+//
+//    Type.Builder yuvType = new Type.Builder(rs, Element.U8(rs)).setX(nv21.length);
+//    Allocation in = Allocation.createTyped(rs, yuvType.create(), Allocation.USAGE_SCRIPT);
+//
+//    Type.Builder rgbaType = new Type.Builder(rs, Element.RGBA_8888(rs)).setX(width).setY(height);
+//    Allocation out = Allocation.createTyped(rs, rgbaType.create(), Allocation.USAGE_SCRIPT);
+//
+//    in.copyFrom(nv21);
+//
+//    yuvToRgbIntrinsic.setInput(in);
+//    yuvToRgbIntrinsic.forEach(out);
+//    return out;
+//  }
 
   void setPixel(byte[] rgba, int index, long color) {
     rgba[index * 4] = (byte) ((color >> 16) & 0xFF);

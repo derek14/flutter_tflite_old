@@ -37,7 +37,7 @@ class Tflite {
   }
 
   static Future<List?> runModelOnFrame(
-      {required List<Uint8List> bytesList,
+      {required Uint8List bytesList,
         int rotation = 90,
         bool asynch = true}) async {
     return await _channel.invokeMethod(
