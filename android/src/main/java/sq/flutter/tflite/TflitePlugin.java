@@ -142,35 +142,6 @@ public class TflitePlugin implements MethodCallHandler {
     return "success";
   }
 
-  Bitmap feedOutput(ByteBuffer imgData, float mean, float std) {
-    Tensor tensor = tfLite.getOutputTensor(0);
-    int outputSize = tensor.shape()[1];
-    Bitmap bitmapRaw = Bitmap.createBitmap(outputSize, outputSize, Bitmap.Config.ARGB_8888);
-
-    if (tensor.dataType() == DataType.FLOAT32) {
-      for (int i = 0; i < outputSize; ++i) {
-        for (int j = 0; j < outputSize; ++j) {
-          int pixelValue = 0xFF << 24;
-          pixelValue |= ((Math.round(imgData.getFloat() * std + mean) & 0xFF) << 16);
-          pixelValue |= ((Math.round(imgData.getFloat() * std + mean) & 0xFF) << 8);
-          pixelValue |= ((Math.round(imgData.getFloat() * std + mean) & 0xFF));
-          bitmapRaw.setPixel(j, i, pixelValue);
-        }
-      }
-    } else {
-      for (int i = 0; i < outputSize; ++i) {
-        for (int j = 0; j < outputSize; ++j) {
-          int pixelValue = 0xFF << 24;
-          pixelValue |= ((imgData.get() & 0xFF) << 16);
-          pixelValue |= ((imgData.get() & 0xFF) << 8);
-          pixelValue |= ((imgData.get() & 0xFF));
-          bitmapRaw.setPixel(j, i, pixelValue);
-        }
-      }
-    }
-    return bitmapRaw;
-  }
-
   ByteBuffer feedInputTensor(Bitmap bitmapRaw, float mean, float std) throws IOException {
     Tensor tensor = tfLite.getInputTensor(0);
     int[] shape = tensor.shape();
@@ -370,9 +341,12 @@ public class TflitePlugin implements MethodCallHandler {
     RunModelOnFrame(HashMap args, Result result) throws IOException {
       super(args, result);
 
-      ByteBuffer imgData = (ByteBuffer) args.get("byteBuffer");
+      List<byte[]> bytesList = (ArrayList) args.get("bytesList");
+      int rotation = (int) (args.get("rotation"));
 
       startTime = SystemClock.uptimeMillis();
+
+      imgData = feedInputTensorFrame(bytesList, imageHeight, imageWidth, 0, 1, rotation);
     }
 
     protected void runTflite() {
@@ -383,6 +357,62 @@ public class TflitePlugin implements MethodCallHandler {
       Log.v("time", "Inference took " + (SystemClock.uptimeMillis() - startTime));
       result.success(output);
     }
+  }
+
+
+
+  private void close() {
+    if (tfLite != null)
+      tfLite.close();
+      output = null;
+  }
+
+  ByteBuffer feedInputTensorFrame(List<byte[]> bytesList, int imageHeight, int imageWidth, float mean, float std, int rotation) throws IOException {
+    ByteBuffer Y = ByteBuffer.wrap(bytesList.get(0));
+    ByteBuffer U = ByteBuffer.wrap(bytesList.get(1));
+    ByteBuffer V = ByteBuffer.wrap(bytesList.get(2));
+
+    int Yb = Y.remaining();
+    int Ub = U.remaining();
+    int Vb = V.remaining();
+
+    byte[] data = new byte[Yb + Ub + Vb];
+
+    Y.get(data, 0, Yb);
+    V.get(data, Yb, Vb);
+    U.get(data, Yb + Vb, Ub);
+
+    Bitmap bitmapRaw = Bitmap.createBitmap(imageWidth, imageHeight, Bitmap.Config.ARGB_8888);
+    Allocation bmData = renderScriptNV21ToRGBA888(
+            mRegistrar.context(),
+            imageWidth,
+            imageHeight,
+            data);
+    bmData.copyTo(bitmapRaw);
+
+    Matrix matrix = new Matrix();
+    matrix.postRotate(rotation);
+    bitmapRaw = Bitmap.createBitmap(bitmapRaw, 0, 0, bitmapRaw.getWidth(), bitmapRaw.getHeight(), matrix, true);
+
+    return feedInputTensor(bitmapRaw, mean, std);
+  }
+
+  public Allocation renderScriptNV21ToRGBA888(Context context, int width, int height, byte[] nv21) {
+    // https://stackoverflow.com/a/36409748
+    RenderScript rs = RenderScript.create(context);
+    ScriptIntrinsicYuvToRGB yuvToRgbIntrinsic = ScriptIntrinsicYuvToRGB.create(rs, Element.U8_4(rs));
+
+    Type.Builder yuvType = new Type.Builder(rs, Element.U8(rs)).setX(nv21.length);
+    Allocation in = Allocation.createTyped(rs, yuvType.create(), Allocation.USAGE_SCRIPT);
+
+    Type.Builder rgbaType = new Type.Builder(rs, Element.RGBA_8888(rs)).setX(width).setY(height);
+    Allocation out = Allocation.createTyped(rs, rgbaType.create(), Allocation.USAGE_SCRIPT);
+
+    in.copyFrom(nv21);
+
+    yuvToRgbIntrinsic.setInput(in);
+    yuvToRgbIntrinsic.forEach(out);
+    return out;
   }
 
   void setPixel(byte[] rgba, int index, long color) {
@@ -413,11 +443,5 @@ public class TflitePlugin implements MethodCallHandler {
 
     matrix.invert(new Matrix());
     return matrix;
-  }
-
-  private void close() {
-    if (tfLite != null)
-      tfLite.close();
-      output = null;
   }
 }
