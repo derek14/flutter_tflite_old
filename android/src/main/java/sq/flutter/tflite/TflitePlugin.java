@@ -28,9 +28,10 @@ import io.flutter.plugin.common.PluginRegistry.Registrar;
 import org.tensorflow.lite.DataType;
 import org.tensorflow.lite.Interpreter;
 import org.tensorflow.lite.InterpreterApi;
+import org.tensorflow.lite.InterpreterFactory;
 import org.tensorflow.lite.Tensor;
 
-import org.tensorflow.lite.gpu.GpuDelegate;
+//import org.tensorflow.lite.gpu.GpuDelegate;
 
 import java.io.BufferedReader;
 import java.io.File;
