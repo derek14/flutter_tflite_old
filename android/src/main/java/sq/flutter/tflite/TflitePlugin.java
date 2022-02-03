@@ -337,7 +337,7 @@ public class TflitePlugin implements MethodCallHandler {
   private class RunModelOnFrame extends TfliteTask {
     long startTime;
     ByteBuffer imgData;
-    TensorBuffer outputBuffer = TensorBuffer.createFixedSize(new int[]{1, OUTPUT_DIMS}, DataType.FLOAT32);
+    TensorBuffer outputBuffer = TensorBuffer.createFixedSize(new int[]{1, 2048}, DataType.FLOAT32);
 
     RunModelOnFrame(HashMap args, Result result) throws IOException {
       super(args, result);
