@@ -55,7 +55,7 @@ import java.util.PriorityQueue;
 import java.util.Vector;
 
 
-public class TflitePlugin implements MethodCallHandler {
+public class TflitePlugin implements FlutterPlugin, MethodCallHandler {
   private final Registrar mRegistrar;
   private InterpreterApi tfLite;
   private boolean tfLiteBusy = false;
@@ -292,7 +292,7 @@ public class TflitePlugin implements MethodCallHandler {
 
       startTime = SystemClock.uptimeMillis();
 
-//      imgData = ByteBuffer.wrap(bytesList);
+      imgData = ByteBuffer.wrap(bytesList);
     }
 
     protected void runTflite() {
