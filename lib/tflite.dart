@@ -26,61 +26,23 @@ class Tflite {
 
   static Future<List?> runModelOnImage(
       {required String path,
-      double imageMean = 117.0,
-      double imageStd = 1.0,
-      int numResults = 5,
-      double threshold = 0.1,
       bool asynch = true}) async {
     return await _channel.invokeMethod(
       'runModelOnImage',
       {
         "path": path,
-        "imageMean": imageMean,
-        "imageStd": imageStd,
-        "numResults": numResults,
-        "threshold": threshold,
-        "asynch": asynch,
-      },
-    );
-  }
-
-  static Future<List?> runModelOnBinary(
-      {required Uint8List binary,
-      int numResults = 5,
-      double threshold = 0.1,
-      bool asynch = true}) async {
-    return await _channel.invokeMethod(
-      'runModelOnBinary',
-      {
-        "binary": binary,
-        "numResults": numResults,
-        "threshold": threshold,
         "asynch": asynch,
       },
     );
   }
 
   static Future<List?> runModelOnFrame(
-      {required List<Uint8List> bytesList,
-      int imageHeight = 1280,
-      int imageWidth = 720,
-      double imageMean = 127.5,
-      double imageStd = 127.5,
-      int rotation = 90, // Android only
-      int numResults = 5,
-      double threshold = 0.1,
+      {required ByteBuffer byteBuffer,
       bool asynch = true}) async {
     return await _channel.invokeMethod(
       'runModelOnFrame',
       {
-        "bytesList": bytesList,
-        "imageHeight": imageHeight,
-        "imageWidth": imageWidth,
-        "imageMean": imageMean,
-        "imageStd": imageStd,
-        "rotation": rotation,
-        "numResults": numResults,
-        "threshold": threshold,
+        "byteBuffer": byteBuffer,
         "asynch": asynch,
       },
     );

@@ -365,25 +365,6 @@ public class TflitePlugin implements MethodCallHandler {
     }
   }
 
-  private class RunModelOnBinary extends TfliteTask {
-    ByteBuffer imgData;
-
-    RunModelOnBinary(HashMap args, Result result) throws IOException {
-      super(args, result);
-
-      byte[] binary = (byte[]) args.get("binary");
-      imgData = ByteBuffer.wrap(binary);
-    }
-
-    protected void runTflite() {
-      tfLite.run(imgData, output);
-    }
-
-    protected void onRunTfliteDone() {
-      result.success(output);
-    }
-  }
-
   private class RunModelOnFrame extends TfliteTask {
     long startTime;
     ByteBuffer imgData;
@@ -391,18 +372,9 @@ public class TflitePlugin implements MethodCallHandler {
     RunModelOnFrame(HashMap args, Result result) throws IOException {
       super(args, result);
 
-      List<byte[]> bytesList = (ArrayList) args.get("bytesList");
-      double mean = (double) (args.get("imageMean"));
-      float IMAGE_MEAN = (float) mean;
-      double std = (double) (args.get("imageStd"));
-      float IMAGE_STD = (float) std;
-      int imageHeight = (int) (args.get("imageHeight"));
-      int imageWidth = (int) (args.get("imageWidth"));
-      int rotation = (int) (args.get("rotation"));
+      ByteBuffer imgData = (ByteBuffer) args.get("byteBuffer");
 
       startTime = SystemClock.uptimeMillis();
-
-      imgData = feedInputTensorFrame(bytesList, imageHeight, imageWidth, IMAGE_MEAN, IMAGE_STD, rotation);
     }
 
     protected void runTflite() {
