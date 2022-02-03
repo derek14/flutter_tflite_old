@@ -341,7 +341,7 @@ public class TflitePlugin implements MethodCallHandler {
     RunModelOnFrame(HashMap args, Result result) throws IOException {
       super(args, result);
 
-      ByteBuffer bytesList = (ByteBuffer) args.get("bytesList");
+      ByteBuffer imgData = (ByteBuffer) args.get("bytesList");
       int rotation = (int) (args.get("rotation"));
 
       startTime = SystemClock.uptimeMillis();
@@ -350,7 +350,7 @@ public class TflitePlugin implements MethodCallHandler {
     }
 
     protected void runTflite() {
-      tfLite.run(bytesList, output);
+      tfLite.run(imgData, output);
     }
 
     protected void onRunTfliteDone() {
