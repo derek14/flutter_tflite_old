@@ -292,9 +292,7 @@ public class TflitePlugin implements MethodCallHandler {
 
       startTime = SystemClock.uptimeMillis();
 
-      imgData = ByteBuffer.wrap(bytesList);
-
-//      imgData = feedInputTensorFrame(bytesList, imageHeight, imageWidth, 0, 1, rotation);
+//      imgData = ByteBuffer.wrap(bytesList);
     }
 
     protected void runTflite() {
