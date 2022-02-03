@@ -56,7 +56,7 @@ import java.util.Vector;
 
 public class TflitePlugin implements MethodCallHandler {
   private final Registrar mRegistrar;
-  private Interpreter tfLite;
+  private InterpreterApi tfLite;
   private boolean tfLiteBusy = false;
   private int inputSize = 0;
 
