@@ -4,6 +4,12 @@ version '1.0-SNAPSHOT'
 buildscript {
     repositories {
         google()
+        mavenLocal()
+        maven {         // add this repo to use snapshots
+            name 'ossrh-snapshot'
+            url 'https://oss.sonatype.org/content/repositories/snapshots'
+        }
+        mavenCentral()
         jcenter()
     }
 
@@ -15,6 +21,12 @@ buildscript {
 rootProject.allprojects {
     repositories {
         google()
+        mavenLocal()
+        maven {         // add this repo to use snapshots
+            name 'ossrh-snapshot'
+            url 'https://oss.sonatype.org/content/repositories/snapshots'
+        }
+        mavenCentral()
         jcenter()
     }
 }
@@ -32,8 +44,22 @@ android {
         disable 'InvalidPackage'
     }
 
-    dependencies {
-        compile 'org.tensorflow:tensorflow-lite:0.0.0-nightly'
-        compile 'org.tensorflow:tensorflow-lite-gpu:0.0.0-nightly'
-    }
+//    dependencies {
+//        compile 'org.tensorflow:tensorflow-lite:0.0.0-nightly'
+//        compile 'org.tensorflow:tensorflow-lite-gpu:0.0.0-nightly'
+//    }
+}
+
+dependencies {
+    implementation 'org.tensorflow:tensorflow-lite-support:0.1.0'
+    // Import tflite dependencies
+    implementation 'org.tensorflow:tensorflow-lite:2.7.0'
+//    implementation 'org.tensorflow:tensorflow-lite:0.0.0-nightly-SNAPSHOT'
+    // The GPU delegate library is optional. Depend on it as needed.
+//    implementation 'org.tensorflow:tensorflow-lite-gpu:0.0.0-nightly-SNAPSHOT'
+//    implementation 'org.tensorflow:tensorflow-lite-support:0.0.0-nightly-SNAPSHOT'
+
+    implementation 'org.tensorflow:tensorflow-lite:0.1.100'
+    implementation 'org.tensorflow:tensorflow-lite-select-tf-ops:0.1.100'
+
 }
