@@ -335,6 +335,7 @@ public class TflitePlugin implements MethodCallHandler {
   private class RunModelOnImage extends TfliteTask {
     ByteBuffer input;
     long startTime;
+    float[] output;
 
     RunModelOnImage(HashMap args, Result result) throws IOException {
       super(args, result);
@@ -362,6 +363,7 @@ public class TflitePlugin implements MethodCallHandler {
   private class RunModelOnFrame extends TfliteTask {
     long startTime;
     ByteBuffer imgData;
+    float[] output;
 
     RunModelOnFrame(HashMap args, Result result) throws IOException {
       super(args, result);
