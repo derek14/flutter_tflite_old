@@ -29,6 +29,7 @@ import org.tensorflow.lite.DataType;
 import org.tensorflow.lite.Interpreter;
 import org.tensorflow.lite.InterpreterApi;
 import org.tensorflow.lite.InterpreterFactory;
+import org.tensorflow.lite.support.tensorbuffer.TensorBuffer;
 import org.tensorflow.lite.Tensor;
 
 //import org.tensorflow.lite.gpu.GpuDelegate;
@@ -336,7 +337,7 @@ public class TflitePlugin implements MethodCallHandler {
   private class RunModelOnFrame extends TfliteTask {
     long startTime;
     ByteBuffer imgData;
-    float[] output;
+    TensorBuffer outputBuffer = TensorBuffer.createFixedSize(new int[]{1, OUTPUT_DIMS}, DataType.FLOAT32);
 
     RunModelOnFrame(HashMap args, Result result) throws IOException {
       super(args, result);
@@ -350,12 +351,12 @@ public class TflitePlugin implements MethodCallHandler {
     }
 
     protected void runTflite() {
-      tfLite.run(imgData, output);
+      tfLite.run(imgData, outputBuffer.getBuffer());
     }
 
     protected void onRunTfliteDone() {
       Log.v("time", "Inference took " + (SystemClock.uptimeMillis() - startTime));
-      result.success(output);
+      result.success(outputBuffer.getFloatArray());
     }
   }
 
